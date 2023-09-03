@@ -1,0 +1,436 @@
+<!-- views/form.ejs -->
+<%- include('./includes/head.ejs') %>
+
+<body>
+  <link rel="stylesheet" type="text/css" href="/style1.css">
+
+  <style>
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #333;
+      padding: 5px 5px 0 5px;
+      color: white
+    }
+
+    .menu {
+      list-style: none;
+      // display: flex;
+      // gap: 20px;
+    }
+
+    .menu li a {
+      text-decoration: none;
+      color: white;
+      transition: color 0.3s;
+      font-size: 20px;
+      // font-weight: bold;
+    }
+
+    .navbar a.nav-link,
+    .navbar {
+        transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease; /* Transition color, background-color, and transform over 0.3 seconds */
+    }
+
+    /* Apply the hover effect */
+    .navbar a.nav-link:hover {
+        color: white; /* Change the color when hovered */
+        // background-color: #f1f1f1; /* Change the background-color when hovered */
+        transform: scale(1.3); /* Apply a slight scale effect when hovered */
+    }
+
+    .uploaded-text {
+      display: flex;
+      justify-content: center; /* Center horizontally */
+      align-items: center; /* Center vertically */
+      font-size: 24px; /* Adjust the font size as needed */
+      font-weight: bold; /* You can adjust the font-weight as needed */
+      color: #333; /* Adjust the text color as needed */
+    }
+  </style>
+
+  <div class="container">
+    <div class="row justify-content-center mt-5">
+
+      <div class="col-xxl">
+        <nav class="navbar border">
+            <ul class="menu w-100 d-flex justify-content-between align-items-center">
+                <li><a class="nav-link" href="/v1/home">Home</a></li>
+                <li><a class="nav-link" href="/v1/add">Add Movie</a></li>
+                <li><form action="/v1/logout" method="POST">
+                    <button class="btn bg-light p-2" type="submit">
+                      <img src="/turn-off.png" height="30px" width="30px"></img>
+                    </button>
+                  </form>
+                </li>
+            </ul>
+        </nav>
+      </div>
+
+      <div class="col-2"></div>
+
+      <div class="col-12 col-sm-8 p-3">
+        <h1>Movie Search</h1>
+
+        <form method="POST" action="/v1<% if(editing) { %>/edit/<%= sid %><% } else { %>/upload<% } %>" id="searchForm">
+          <div class="mb-1 input-container">
+            <input type="text" class="form-control" id="searchInput" name="selectedMovieName" placeholder="Search...">
+            <button type="button" id="clearButton" class="clear-button">x</button>
+          </div>
+          <input type="hidden" id="selectedMovieId" name="selectedMovieId">
+          <input type="hidden" id="selectedMediaType" name="selectedMediaType">
+
+          <ul id="searchResults" class="list-group">
+          </ul>
+          <ul id="seasons"></ul>
+
+          <div class="row">
+            <!-- <div class="col-2"></div> -->
+
+            <div class="col-12 col-sm-12">
+              <div id="searchTypeContainer" style="display: none; margin-top: 10px;">
+                <button type="button" id="tvButton" class="get-seasons-button">Get Seasons</button>
+              </div>
+            </div>
+
+            <!-- <div class="col-2"></div> -->
+          </div>
+
+          <div class="row">
+            <!-- <div class="col-2"></div> -->
+
+            <div class="col-12 col-sm-12">
+              <div id="searchMovieContainer" style="display: none; margin-top: 10px;">
+                <button type="button" id="movieButton" class="get-seasons-button">Get Movies</button>
+              </div>
+            </div>
+
+            <!-- <div class="col-2"></div> -->
+          </div>
+
+          <div class="row">
+
+            <div class="col-12 p-3">
+              <ul id="episodeList">
+                <!-- This is where the episodes will be listed -->
+              </ul>
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="col"></div>
+
+            <div class="col">
+                <button class="btn text-light bg-dark" id="subBtn" type="submit" style="display: none;">submit</button>
+              </form>
+            </div>
+
+            <div class="col"></div>
+          </div>
+        </form>
+
+      </div>
+
+      <div class="col-2"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.0.4/js.cookie.min.js" integrity="sha512-Nonc2AqL1+VEN+97F3n4YxucBOAL5BgqNwEVc2uUjdKOWAmzwj5ChdJQvN2KldAxkCxE4OenuJ/RL18bWxGGzA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  </script>
+
+  <script src="/script1.js"></script>
+
+  <script>
+    let dataArray = '<%= JSON.stringify(dataArray) %>';
+    let season = '<%= season %>';
+    let sid = '<%= sid %>';
+    let title = '<%= title %>';
+    let Type = '<%= type %>';
+  </script>
+
+  <script>
+    const episodesData = JSON.parse(dataArray.replace(/&#34;/g, '"'));
+    const sNumber = season;
+    const serialId = sid;
+    const name = title;
+    const type = Type;
+
+    let uploadedVideos = 0;
+    // console.log(episodesData);
+    // console.log(sNumber, serialId, name, type);
+
+    const form = globalThis.document.getElementById('searchForm');
+    const submitButton = document.getElementById('subBtn');
+
+    <% if(editing === true) { %>
+      const searchInput = globalThis.document.getElementById('searchInput');
+      const clearButton = globalThis.document.getElementById('clearButton');
+      const selectedMovieIdInput = globalThis.document.getElementById('selectedMovieId');
+      const selectedMediaType = globalThis.document.getElementById('selectedMediaType');
+
+      searchInput.value = name;
+      selectedMovieIdInput.value = serialId;
+      selectedMediaType.value = type;
+      searchInput.style.pointerEvents = 'none';
+      clearButton.style.pointerEvents = 'none';
+
+      if (episodesData && episodesData.length >= 1) {
+        const resultsHTML = episodesData.map((tvShow) => {
+          // console.log(tvShow.url, !tvShow.url);
+          if (!tvShow.url) {
+            return `<div class="row border mb-4">
+              <div class="col-12 col-sm-6 col-md-8 col-lg-5 border text-sm-center p-0" id="embed-responsive_${tvShow.id}" style="display: none;">
+                  <div class="embed-responsive embed-responsive-16by9">
+                    <div id="image_${tvShow.id}" class="uploaded-text"></div>
+                  </div>
+              </div>
+              <div class="col-12 col-sm-6 col-md-8 col-lg-5 video-uploader" id="video-uploader_${tvShow.id}">
+                <label class="file-label" for="episodeFile_${tvShow.id}" id="fileLabel_${tvShow.id}">
+                  <i class="fa-solid fa-file-video"></i> Choose Video
+                </label>
+                <input type="file" id="episodeFile_${tvShow.id}" class="file-input" />
+                <input type="hidden" class="border-0" id="episodeId_${tvShow.id}" name="episodeId" value="${tvShow.id}">
+                <input type="hidden" id="episodeVal_${tvShow.id}" name="episodeVal" class="custom-file-input">
+                <input type="hidden" id="episodeDeleteVal_${tvShow.id}" name="episodeDeleteVal" class="custom-file-input">
+                <span id="file_name_${tvShow.id}" name="file_name_${tvShow.id}" class="file-name">No file chosen</span>
+              </div>
+              <div class="col-12 col-sm-6 col-md-4 col-lg-5 text-center" style="word-wrap: break-word;">
+                <p class="text-break">${tvShow.name}</p>
+                <input type="hidden" class="border-0" id="episodeName_${tvShow.id}" value="${tvShow.name}">
+                <input type="hidden" name="seasonNumber" value="${sNumber}" />
+              </div>
+              <div class="col-12 col-sm-12 col-md-12 col-lg-2 d-flex justify-content-between">
+                <div id="spinner_${tvShow.id}" class="spinner-border" role="status" style="display: none;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <button type="button" class="btn upload-button border-0" data-tvshow-id="${tvShow.id}">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                </button>
+                <button type="button" class="btn delete-button" data-tvshow-id="${tvShow.id}">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>`
+          }
+          else {
+            return `<div class="row border mb-4">
+              <div class="col-12 col-sm-6 col-md-8 col-lg-5 border text-sm-center p-0" id="embed-responsive_${tvShow.id}" style="display: block;">
+                  <div class="embed-responsive embed-responsive-16by9">
+                      <div id="image_${tvShow.id}" class="uploaded-text">UPLOADED</div>
+                  </div>
+              </div>
+              <div class="col-12 col-sm-6 col-md-8 col-lg-5 video-uploader" id="video-uploader_${tvShow.id}" style="display: none;">
+                <label class="file-label" for="episodeFile_${tvShow.id}" id="fileLabel_${tvShow.id}">
+                  <i class="fa-solid fa-file-video"></i> Choose Video
+                </label>
+                <input type="file" id="episodeFile_${tvShow.id}" class="file-input" />
+                <input type="hidden" class="border-0" id="episodeId_${tvShow.id}" name="episodeId" value="${tvShow.id}">
+                <input type="hidden" id="episodeVal_${tvShow.id}" name="episodeVal" class="custom-file-input">
+                <input type="hidden" id="episodeDeleteVal_${tvShow.id}" name="episodeDeleteVal" class="custom-file-input">
+                <span id="file_name_${tvShow.id}" name="file_name_${tvShow.id}" class="file-name">No file chosen</span>
+              </div>
+              <div class="col-12 col-sm-6 col-md-4 col-lg-5 text-center" style="word-wrap: break-word;">
+                <p class="text-break">${tvShow.name}</p>
+                <input type="hidden" class="border-0" id="episodeName_${tvShow.id}" value="${tvShow.name}">
+                <input type="hidden" name="seasonNumber" value="${sNumber}" />
+              </div>
+              <div class="col-12 col-sm-12 col-md-12 col-lg-2 d-flex justify-content-between">
+                <div id="spinner_${tvShow.id}" class="spinner-border" role="status" style="display: none;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <button type="button" class="btn upload-button border-0" data-tvshow-id="${tvShow.id}">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                </button>
+                <button type="button" class="btn delete-button" data-tvshow-id="${tvShow.id}">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>`
+          }
+        }).join('');
+        episodeList.innerHTML = resultsHTML;
+
+        // Attach event listener to all buttons with the class "upload-button"
+        globalThis.document.querySelectorAll('.upload-button').forEach(button => {
+          button.addEventListener('click', function(e) {
+            const tvShowId = this.getAttribute('data-tvshow-id');
+            // console.log(tvShowId, e.target);
+            uploadVideo(tvShowId, this);
+          });
+        });
+
+        // Attach event listener to all buttons with the class "delete-button"
+        globalThis.document.querySelectorAll('.delete-button').forEach(button => {
+          button.addEventListener('click', function(e) {
+            const tvShowId = this.getAttribute('data-tvshow-id');
+
+            // console.log(tvShowId, e.target);
+            deleteVideo(tvShowId, this);
+          });
+        });
+
+        // Add the click event listener to the document and delegate it to file-input elements
+        document.addEventListener("change", function (event) {
+          if (event.target.matches(".file-input")) {
+            const fileInput = event.target;
+            const fileNameDisplay = fileInput.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling; // The third sibling is the file-name span
+
+            // console.log(fileInput, fileNameDisplay);
+
+            const file = fileInput.files[0];
+            // console.log(file);
+            if (file) {
+              fileNameDisplay.textContent = file.name;
+            } else {
+              fileNameDisplay.textContent = "No file chosen";
+            }
+          }
+        });
+
+        function uploadVideo(tvShowId, btn) {
+          submitButton.style.display = 'none';
+          btn.disabled = true;
+
+          // console.log(tvShowId, 'editing');
+
+          const videoIframe = document.querySelector(`#embed-responsive_${tvShowId}`);
+          const fileInput = document.querySelector(`#episodeFile_${tvShowId}`);
+          const videoUploader = document.querySelector(`#video-uploader_${tvShowId}`);
+
+          // console.log(videoIframe);
+          const iframeElement = document.getElementById(`image_${tvShowId}`);
+          const iUrl = iframeElement.textContent;
+
+          // console.log(iframeElement, iUrl);
+          
+          if (iUrl !== 'UPLOADED') {
+            videoIframe.style.display = 'none';
+            videoUploader.style.display = 'block';
+          }
+
+          // videoIframe.style.display = "none"; 
+           
+          if (fileInput.files.length === 0) {
+            alert('Please select a video to upload.');
+            btn.disabled = false;
+            return;
+          }
+
+          const file = fileInput.files[0];
+          // console.log(file);
+
+          const spinner = document.getElementById(`spinner_${tvShowId}`);
+          spinner.style.display = 'block';
+
+          const baseUri = 'https://uptobox.com';
+          // console.log(publicId);
+
+          const requestOptions = {
+            method: 'GET',
+            redirect: 'follow'
+          };
+
+          fetch("https://uptobox.com/api/upload?token=45701da784b02110e845cb7b8a8872577d32q", requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              // console.log(result, result.data.uploadLink);
+
+              const uploadUrl = result.data.uploadLink;
+
+              const formdata = new FormData();
+              formdata.append("files", file);
+              // console.log(uploadUrl);
+
+              const requestOptions2 = {
+                method: 'POST',
+                body: formdata,
+                redirect: 'follow'
+              };
+
+              fetch(`https:${uploadUrl}`, requestOptions2)
+                .then(response => response.json())
+                .then(result => {
+                  // console.log(result.files[0]);
+
+                  const parsedData = result.files[0];
+
+                  const url = parsedData.url;
+                  const delUrl = parsedData.deleteUrl;
+
+                  // console.log(url, delUrl);
+
+                  document.getElementById(`episodeVal_${tvShowId}`).value = url;
+                  document.getElementById(`episodeDeleteVal_${tvShowId}`).value = delUrl;
+
+                  if(url) {
+                    videoUploader.style.display = 'none';
+                    videoIframe.style.display = "block";
+                    // Get a reference to the <iframe> element inside the <div>
+                    iframeElement.textContent = 'UPLOADED';
+
+                    submitButton.style.display = 'block';
+                    spinner.style.display = 'none';
+                  }
+                  else {
+                    submitButton.style.display = 'none';
+                    spinner.style.display = 'none';
+                    btn.disabled = false;
+                  }
+                })
+                .catch(error => {
+                  // console.log('error', error);
+                  btn.disabled = false;
+                  spinner.style.display = 'none';
+                });
+            })
+            .catch(error => {
+              // console.log('error', error);
+              btn.disabled = false;
+              spinner.style.display = 'none';
+            });
+        }
+        
+        function deleteVideo(tvShowId, btn) {
+          try {
+            // console.log(tvShowId);
+            const videoIframe = document.querySelector(`#embed-responsive_${tvShowId}`);
+            const uploadButton = btn.previousElementSibling;
+            const videoUploader = document.querySelector(`#video-uploader_${tvShowId}`);
+
+            const iframeElement = document.getElementById(`image_${tvShowId}`);
+            const iUrl = iframeElement.textContent;
+
+            // console.log(iframeElement, iUrl);
+
+            if (iUrl === 'UPLOADED') {
+              videoIframe.style.display = 'none';
+              videoUploader.style.display = 'block';
+              // console.log(uploadButton);
+              // uploadButton.disabled = false;
+              // videoUploader.style.display = 'block';
+              // Set the value of the action attribute
+              form.setAttribute('action', `/v1/deleteItem/${tvShowId}/?sid=${serialId}&season=${sNumber}&title=${name}&type=${type}`);
+              form.submit();
+            }
+            else {
+              // uploadButton.disabled = true;
+              // btn.disabled = true;
+              submitButton.style.display = 'none';
+              videoUploader.style.display = 'block';
+              videoIframe.style.display = 'none';
+            }
+          }
+          catch (error) {
+            // Handle any errors that occur during data retrieval or video deletion
+            console.error('Error:', error.message);
+          }
+        }
+      }
+    <% } %>
+  </script>
+
+</body>
+
+<%- include('./includes/end.ejs') %>
