@@ -214,7 +214,7 @@
                   <label class="file-label" for="movieFile_${movieParts.id}" id="fileLabel_${movieParts.id}">
                     <i class="fa-solid fa-file-video"></i> Choose Video
                   </label>
-                  <input type="file" id="movieFile_${movieParts.id}" class="file-input" />
+                  <input type="file" id="movieFile_${movieParts.id}" class="file-input" accept="video/*" />
                   <input type="hidden" class="border-0" id="movieId_${movieParts.id}" name="movieId" value="${movieParts.id}">
                   <input type="hidden" id="movieVal_${movieParts.id}" name="movieVal" class="custom-file-input">
                   <input type="hidden" id="movieDelVal_${movieParts.id}" name="movieDelVal" class="custom-file-input">
@@ -316,21 +316,45 @@
 
           // console.log(videoIframe);
 
-          videoIframe.style.display = "none";              
+          videoIframe.style.display = "none"; 
+
+          const file = fileInput.files[0];
+          // console.log(file);             
 
           if (fileInput.files.length === 0) {
             alert('Please select a video to upload.');
             btn.disabled = false;
             return;
           }
-          const file = fileInput.files[0];
-          // console.log(file);
+
+          else if (file) {
+            // console.log(file.name);
+            function isVideoExtension(extension) {
+              const videoExtensions = [".mp4", ".avi", ".wmv", ".mov", ".mkv", ".flv", ".webm", ".3gp", ".ogv", ".mpeg", ".mpg", ".divx", ".vob"];
+              return videoExtensions.includes(extension.toLowerCase());
+            }
+            const extension = file.name.match(/\.([^\.]+)$/);
+
+            if (extension) {
+              const extractedExtension = extension[1].toLowerCase(); // Convert to lowercase for case-insensitive comparison
+              const isVideo = isVideoExtension("." + extractedExtension); // Add dot prefix
+              // console.log(isVideo);
+              if (!isVideo) {
+                alert('Please select a video to upload.');
+                btn.disabled = false;
+                const fileNameDisplay = fileInput.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling; // The third sibling is the file-name span
+                fileNameDisplay.textContent = "No file chosen";
+                return;
+              }
+            } else {
+              console.log("No extension found");
+            }
+          }
 
           const spinner = document.getElementById(`spinner_${movieShowId}`);
           spinner.style.display = 'block';
 
           const baseUri = 'https://uptobox.com';
-          // console.log(publicId);
 
           const requestOptions = {
             method: 'GET',
@@ -387,13 +411,13 @@
                   }
                 })
                 .catch(error => {
-                  console.log('error', error);
+                  // console.log('error', error);
                   btn.disabled = false;
                   spinner.style.display = 'none';
                 });
             })
             .catch(error => {
-              console.log('error', error);
+              // console.log('error', error);
               btn.disabled = false;
               spinner.style.display = 'none';
             });
@@ -487,15 +511,39 @@
 
               // console.log(videoIframe);
 
-              videoIframe.style.display = "none";              
+              videoIframe.style.display = "none"; 
+              const file = fileInput.files[0];
+              // console.log(file);             
 
               if (fileInput.files.length === 0) {
                 alert('Please select a video to upload.');
                 btn.disabled = false;
                 return;
               }
-              const file = fileInput.files[0];
-              // console.log(file);
+
+              else if (file) {
+                // console.log(file.name);
+                function isVideoExtension(extension) {
+                  const videoExtensions = [".mp4", ".avi", ".wmv", ".mov", ".mkv", ".flv", ".webm", ".3gp", ".ogv", ".mpeg", ".mpg", ".divx", ".vob"];
+                  return videoExtensions.includes(extension.toLowerCase());
+                }
+                const extension = file.name.match(/\.([^\.]+)$/);
+
+                if (extension) {
+                  const extractedExtension = extension[1].toLowerCase(); // Convert to lowercase for case-insensitive comparison
+                  const isVideo = isVideoExtension("." + extractedExtension); // Add dot prefix
+                  // console.log(isVideo);
+                  if (!isVideo) {
+                    alert('Please select a video to upload.');
+                    btn.disabled = false;
+                    const fileNameDisplay = fileInput.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling; // The third sibling is the file-name span
+                    fileNameDisplay.textContent = "No file chosen";
+                    return;
+                  }
+                } else {
+                  console.log("No extension found");
+                }
+              }
 
               const spinner = document.getElementById(`spinner_${tvShowId}`);
               spinner.style.display = 'block';
@@ -561,13 +609,13 @@
                       }
                     })
                     .catch(error => {
-                      console.log('error', error);
+                      // console.log('error', error);
                       btn.disabled = false;
                       spinner.style.display = 'none';
                     });
                 })
                 .catch(error => {
-                  console.log('error', error);
+                  // console.log('error', error);
                   btn.disabled = false;
                   spinner.style.display = 'none';
                 });
