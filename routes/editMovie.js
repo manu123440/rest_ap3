@@ -71,7 +71,9 @@ router.get("/edit/:sid", (req, res, next) => {
 			  	if (result.id && result.hasOwnProperty("episodes")) {
 			  		// console.log("seasons");
 			  		const episodeName = result.episodes.map(ep => ep.name);
-			  		// console.log(episodeName);
+			  		const episodeId = result.episodes.map(ep => ep.id);
+
+			  		// console.log(episodeId, episodeName);
 
 			  		request(opt1, (error, response) => {
 					    if (error) throw new Error(error);
@@ -81,14 +83,15 @@ router.get("/edit/:sid", (req, res, next) => {
 					    	// console.log(x);
 
 					    	if (x.length >= 1) {
-					    		const urlArray = x.map((idItem, index) => {
-						    		return {
-							    		id: idItem.video_id,
-							    		name: episodeName[index],
-							    		url: idItem.video_url,
-							    		delUrl: idItem.delete_url
-							    	}
-						    	})
+					    		const urlArray = episodeId.map((id, index) => {
+									  let matchingData = x.find((item) => item.video_id === id.toString());
+									  return {
+									    id: id,
+									    name: episodeName[index],
+									    url: matchingData ? matchingData.video_url : '',
+									    delUrl: matchingData ? matchingData.delete_url : ''
+									  };
+									});
 
 						    	// console.log(urlArray);
 
@@ -111,9 +114,9 @@ router.get("/edit/:sid", (req, res, next) => {
 
 			  	else if (result.id && result.hasOwnProperty("parts")) {
 			  		// console.log("collections");
-			  		// const episodeId = result.parts.map(ep => ep.id);
+			  		const episodeId = result.parts.map(ep => ep.id);
 			  		const episodeName = result.parts.map(ep => ep.title);
-			  		// console.log(episodeName);
+			  		// console.log(episodeId);
 
 			  		request(opt1, (error, response) => {
 					    if (error) throw new Error(error);
@@ -123,15 +126,15 @@ router.get("/edit/:sid", (req, res, next) => {
 					    	// console.log(x);
 
 					    	if (x.length >= 1) {
-						    	const urlArray = x.map((idItem, index) => {
-						    		// console.log(idItem);
-						    		return {
-							    		id: idItem.video_id,
-							    		name: episodeName[index],
-							    		url: idItem.video_url,
-							    		delUrl: idItem.delete_url
-							    	}
-						    	})
+					    		const urlArray = episodeId.map((id, index) => {
+									  let matchingData = x.find((item) => item.video_id === id.toString());
+									  return {
+									    id: id,
+									    name: episodeName[index],
+									    url: matchingData ? matchingData.video_url : '',
+									    delUrl: matchingData ? matchingData.delete_url : ''
+									  };
+									});
 
 						    	// console.log(urlArray);
 
