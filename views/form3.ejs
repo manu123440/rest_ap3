@@ -304,6 +304,9 @@
           const iUrl = iframeElement.textContent;
 
           // console.log(iframeElement, iUrl);
+
+          const file = fileInput.files[0];
+          // console.log(file);
           
           if (iUrl !== 'UPLOADED') {
             videoIframe.style.display = 'none';
@@ -318,8 +321,29 @@
             return;
           }
 
-          const file = fileInput.files[0];
-          // console.log(file);
+          else if (file) {
+            // console.log(file.name);
+            function isVideoExtension(extension) {
+              const videoExtensions = [".mp4", ".avi", ".wmv", ".mov", ".mkv", ".flv", ".webm", ".3gp", ".ogv", ".mpeg", ".mpg", ".divx", ".vob"];
+              return videoExtensions.includes(extension.toLowerCase());
+            }
+            const extension = file.name.match(/\.([^\.]+)$/);
+
+            if (extension) {
+              const extractedExtension = extension[1].toLowerCase(); // Convert to lowercase for case-insensitive comparison
+              const isVideo = isVideoExtension("." + extractedExtension); // Add dot prefix
+              // console.log(isVideo);
+              if (!isVideo) {
+                alert('Please select a video to upload.');
+                btn.disabled = false;
+                const fileNameDisplay = fileInput.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling; // The third sibling is the file-name span
+                fileNameDisplay.textContent = "No file chosen";
+                return;
+              }
+            } else {
+              console.log("No extension found");
+            }
+          }
 
           const spinner = document.getElementById(`spinner_${tvShowId}`);
           spinner.style.display = 'block';
