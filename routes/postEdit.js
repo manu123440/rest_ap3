@@ -20,12 +20,10 @@ let updateFunction = (item, item2) => {
 
 router.post("/edit/:tvShowId", 
 	async (req, res, next) => {
-		const tvShowId = req.params.tvShowId; // Get the TV show ID from the request parameters
+	const tvShowId = req.params.tvShowId; // Get the TV show ID from the request parameters
         const selectedMovieName = req.body.selectedMovieName;
         const selectedMovieId = req.body.selectedMovieId;
         const type = req.body.selectedMediaType;
-        const seasonNumber = req.body.seasonNumber[0];
-
         const { episodeId, episodeVal, episodeDeleteVal }  = req.body;
 
         // console.log(episodeId, episodeVal);
@@ -33,6 +31,7 @@ router.post("/edit/:tvShowId",
         // console.log(tvShowId, req.body);
 
         if (type === 'tv') {
+            const seasonNumber = req.body.seasonNumber[0];		
             const combinedData = episodeId.map((idItem, index) => ({
                 id: idItem,
                 url: episodeVal[index],
