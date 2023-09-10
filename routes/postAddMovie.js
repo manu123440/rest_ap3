@@ -23,12 +23,12 @@ router.post('/upload',
         // console.log(req.body);
 
         const type = req.body.selectedMediaType;
-        const seasonNumber = req.body.seasonNumber[0];
-
         // console.log(type, seasonNumber);
 
         if (type === 'tv') {
             const seasonId = req.body.selectedMovieId;
+
+            const seasonNumber = req.body.seasonNumber[0];
 
             const episodeId = req.body.episodeId;
 
